@@ -1,5 +1,10 @@
 import numpy as np
 import pandas as pd
+try:
+    from sklearnex import patch_sklearn
+    patch_sklearn()
+except:
+    pass
 from sklearn.metrics import mean_absolute_error, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
@@ -227,7 +232,7 @@ class ARS:
         -------
         pd.DataFrame
             DataFrame con los resultados del ARS para cada característica.
-            Columnas: ['feature', 'ARS', 'median_original', 'threshold', 'objective', 'model_type']
+            Columnas: ['feature', 'ARS', 'median_original', 'threshold', 'RGI', 'error_type', 'objective', 'model_type']
         """
         
         if target_column not in df.columns:
@@ -255,7 +260,7 @@ class ARS:
         
         if len(valid_features) == 0:
             print("No hay características válidas para evaluar (todas contienen NaN)")
-            return pd.DataFrame(columns=['feature', 'ARS', 'median_original', 'threshold', 'objective', 'model_type'])
+            return pd.DataFrame(columns=['feature', 'ARS', 'median_original', 'threshold', 'RGI', 'error_type', 'objective', 'model_type'])
         
         # Función interna para calcular ARS de una característica
         def _calculate_single_feature(feature):
@@ -281,6 +286,8 @@ class ARS:
                     'ARS': result[0],
                     'median_original': result[1],
                     'threshold': result[2],
+                    'RGI': result[1] - result[2],
+                    'error_type': 'MAE' if objective == 'regression' else 'F1',
                     'objective': result[3],
                     'model_type': result[4]
                 }
